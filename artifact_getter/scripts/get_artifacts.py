@@ -1,11 +1,10 @@
 import json
-import re
 from typing import List
 
 import httpx
 
 
-def get_artifact_list(CircleCI_link: str, circle_token: str) -> List[dict]:
+def get_all(CircleCI_link: str, circle_token: str) -> List[dict]:
     """Get a list of the locations of all the build artifacts."""
 
     # Create request url
