@@ -7,6 +7,9 @@ import httpx
 def get_all(CircleCI_link: str, circle_token: str) -> List[dict]:
     """Get a list of the locations of all the build artifacts."""
 
+    if CircleCI_link[-1] == "/":
+        CircleCI_link = CircleCI_link[:-1]
+
     # Create request url
     url = (
         CircleCI_link[0:20]
