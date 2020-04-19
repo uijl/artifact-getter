@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, redirect
 from artifact_getter.scripts import get_artifacts
 
 app = Flask(__name__)
@@ -21,10 +21,6 @@ def get_all_artifacts():
         return jsonify({"error": "Pass the parameters 'circle_url' and 'circle_token'"})
 
 
-# EXAMPLE REQUEST
-# http://localhost:5000/get_coverage_report?circle_url=https://circleci.com/gh/uijl/wtdpy&circle_token=4
-# http://localhost:5000/get_coverage_report?circle_url=https://circleci.com/gh/uijl/wtdpy&circle_token=4&output=str
-
 @app.route("/get_coverage_report", methods=["GET"])
 def get_coverage_report():
 
@@ -45,10 +41,9 @@ def get_coverage_report():
     for item in response:
         if "tmp/artifacts/index.html" in item["path"]:
             if output == "str":
-                return item["url"]
+                return redirect(item["url"])
             elif output == "json":
                 return jsonify({"coverage_report": item["url"]})
-
 
 
 @app.route("/get_coverage_badge", methods=["GET"])
@@ -71,6 +66,6 @@ def get_coverage_badge():
     for item in response:
         if "tmp/artifacts/coverage.svg" in item["path"]:
             if output == "str":
-                return item["url"]
+                return redirect(item["url"])
             elif output == "json":
                 return jsonify({"coverage_report": item["url"]})
