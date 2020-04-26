@@ -3,6 +3,7 @@ from artifact_getter.scripts import get_artifacts
 
 app = Flask(__name__)
 
+
 @app.route("/")
 def main():
     return jsonify(dict(message="Basic server"))
@@ -16,7 +17,7 @@ def get_all_artifacts():
         circle_token = request.args["circle_token"]
 
         return jsonify(get_artifacts.get_all(circle_url, circle_token))
-    
+
     except KeyError:
         return jsonify({"error": "Pass the parameters 'circle_url' and 'circle_token'"})
 
@@ -27,7 +28,7 @@ def get_coverage_report():
     try:
         circle_url = request.args["circle_url"]
         circle_token = request.args["circle_token"]
-    
+
     except KeyError:
         return jsonify({"error": "Pass the parameters 'circle_url' and 'circle_token'"})
 
@@ -52,7 +53,7 @@ def get_coverage_badge():
     try:
         circle_url = request.args["circle_url"]
         circle_token = request.args["circle_token"]
-    
+
     except KeyError:
         return jsonify({"error": "Pass the parameters 'circle_url' and 'circle_token'"})
 
