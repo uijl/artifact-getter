@@ -1,72 +1,97 @@
 from flask import Flask, jsonify, request, redirect
-from artifact_getter.scripts import get_artifacts
+from artifact_getter.scripts import get_artifacts, get_params
 
 app = Flask(__name__)
 
 
 @app.route("/")
-def main():
+def main() -> None:
     return jsonify(dict(message="Basic server"))
 
 
 @app.route("/get_all_artifacts", methods=["GET"])
-def get_all_artifacts():
+def get_all_artifacts() -> list:
+    """Return a json with all CircleCI build artifacts."""
 
-    try:
-        circle_url = request.args["circle_url"]
-        circle_token = request.args["circle_token"]
+    circle_url, circle_token = get_params.get_params(request.args)
 
+    if circle_token:
         return jsonify(get_artifacts.get_all(circle_url, circle_token))
-
-    except KeyError:
-        return jsonify({"error": "Pass the parameters 'circle_url' and 'circle_token'"})
+    else:
+        return jsonify(get_artifacts.get_all(circle_url))
 
 
 @app.route("/get_coverage_report", methods=["GET"])
-def get_coverage_report():
+def get_coverage_report() -> None:
+    """Redirect to the coverage report."""
 
-    try:
-        circle_url = request.args["circle_url"]
-        circle_token = request.args["circle_token"]
+    circle_url, circle_token = get_params.get_params(request.args)
 
-    except KeyError:
-        return jsonify({"error": "Pass the parameters 'circle_url' and 'circle_token'"})
-
-    if "output" in request.args:
-        output = request.args["output"]
+    if circle_token:
+        response = get_artifacts.get_all(circle_url, circle_token)
     else:
-        output = "str"
+        response = get_artifacts.get_all(circle_url)
 
-    response = get_artifacts.get_all(circle_url, circle_token)
+    # Check if the location of the report is passed
+    try:
+        coverage_location = request.args["coverage_location"]
+    except KeyError:
+        coverage_location = None
+
+    # Check if name of the report is passed
+    try:
+        coverage_name = request.args["coverage_name"]
+    except KeyError:
+        coverage_name = None
 
     for item in response:
-        if "tmp/artifacts/index.html" in item["path"]:
-            if output == "str":
+        if coverage_location and coverage_name:
+            if coverage_location in item["path"] and coverage_name in item["path"]:
                 return redirect(item["url"])
-            elif output == "json":
-                return jsonify({"coverage_report": item["url"]})
+        elif coverage_location:
+            if coverage_location in item["path"] and "index.html" in item["path"]:
+                return redirect(item["url"])
+        elif coverage_name:
+            if coverage_name in item["path"]:
+                return redirect(item["url"])
+        else:
+            if "tmp/artifacts/index.html" in item["path"]:
+                return redirect(item["url"])
 
 
 @app.route("/get_coverage_badge", methods=["GET"])
-def get_coverage_badge():
+def get_coverage_badge() -> None:
+    """Redirect to the coverage badge"""
 
-    try:
-        circle_url = request.args["circle_url"]
-        circle_token = request.args["circle_token"]
+    circle_url, circle_token = get_params.get_params(request.args)
 
-    except KeyError:
-        return jsonify({"error": "Pass the parameters 'circle_url' and 'circle_token'"})
-
-    if "output" in request.args:
-        output = request.args["output"]
+    if circle_token:
+        response = get_artifacts.get_all(circle_url, circle_token)
     else:
-        output = "str"
+        response = get_artifacts.get_all(circle_url)
 
-    response = get_artifacts.get_all(circle_url, circle_token)
+    # Check if the location of the report is passed
+    try:
+        badge_location = request.args["badge_location"]
+    except KeyError:
+        badge_location = None
+
+    # Check if name of the report is passed
+    try:
+        badge_name = request.args["badge_name"]
+    except KeyError:
+        badge_name = None
 
     for item in response:
-        if "tmp/artifacts/coverage.svg" in item["path"]:
-            if output == "str":
+        if badge_location and badge_name:
+            if badge_location in item["path"] and badge_name in item["path"]:
                 return redirect(item["url"])
-            elif output == "json":
-                return jsonify({"coverage_report": item["url"]})
+        elif badge_location:
+            if badge_location in item["path"] and "coverage.svg" in item["path"]:
+                return redirect(item["url"])
+        elif badge_name:
+            if badge_name in item["path"]:
+                return redirect(item["url"])
+        else:
+            if "tmp/artifacts/coverage.svg" in item["path"]:
+                return redirect(item["url"])

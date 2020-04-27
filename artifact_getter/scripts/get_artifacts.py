@@ -28,10 +28,8 @@ def get_all(CircleCI_link: str, circle_token: str = None) -> List[dict]:
     else:
         request = httpx.get(url).json()
         if request == {"message": "Project not found"}:
-            return json.dumps(
-                {
-                    "error": "Project cannot be reached because no circle_token is provided"
-                }
-            )
+            return {
+                "error": "Project cannot be reached because no circle_token is provided"
+            }
         else:
             return request
